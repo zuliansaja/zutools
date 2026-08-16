@@ -201,6 +201,7 @@ input:checked+.slider::before{transform:translateX(18px);}
 .dropzone{
   border:2px dashed #3a4657;border-radius:12px;padding:30px 16px;text-align:center;
   color:var(--muted);font-size:13px;cursor:pointer;
+  position:relative;display:block;
 }
 .dropzone.drag{border-color:var(--teal);color:var(--teal);}
 .preview-img{max-width:100%;border-radius:10px;margin-top:10px;}
@@ -234,7 +235,7 @@ input:checked+.slider::before{transform:translateX(18px);}
       </button>
       <button class="tool-tag accent-teal" onclick="openModule('qr')">
         <div class="ic"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><line x1="14" y1="14" x2="14" y2="21"/><line x1="14" y1="14" x2="21" y2="14"/><line x1="17.5" y1="17.5" x2="21" y2="17.5"/><line x1="17.5" y1="17.5" x2="17.5" y2="21"/></svg></div>
-        <div><div class="lbl">QR Code</div><div class="sub">Buat & Scan</div></div>
+        <div><div class="lbl">QR Code</div><div class="sub">Buat QR Code dari teks</div></div>
       </button>
       <button class="tool-tag" onclick="openModule('zakat')">
         <div class="ic"><svg viewBox="0 0 24 24"><circle cx="7.5" cy="7.5" r="2.8"/><circle cx="16.5" cy="16.5" r="2.8"/><line x1="18.5" y1="5.5" x2="5.5" y2="18.5"/></svg></div>
@@ -911,8 +912,8 @@ RENDERERS.pomodoro=(el)=>{
 RENDERERS.compress=(el)=>{
   el.innerHTML=`
     <div class="card">
-      <div class="dropzone" id="dz">Tap untuk pilih gambar, atau drag & drop di sini</div>
-      <input type="file" accept="image/*" id="imgFile" style="display:none">
+      <label class="dropzone" id="dz" for="imgFile">Tap untuk pilih gambar, atau drag & drop di sini</label>
+      <input type="file" accept="image/*" id="imgFile" style="position:absolute;width:1px;height:1px;opacity:0;overflow:hidden">
     </div>
     <div class="card" id="ctrlCard" style="display:none">
       <label class="field-lbl">Kualitas: <span id="qVal">80</span>%</label>
@@ -928,7 +929,6 @@ RENDERERS.compress=(el)=>{
     </div>
   `;
   const dz=el.querySelector('#dz'), fileInp=el.querySelector('#imgFile');
-  dz.onclick=()=>fileInp.click();
   dz.ondragover=(e)=>{e.preventDefault();dz.classList.add('drag');};
   dz.ondragleave=()=>dz.classList.remove('drag');
   dz.ondrop=(e)=>{e.preventDefault();dz.classList.remove('drag');if(e.dataTransfer.files[0])loadFile(e.dataTransfer.files[0]);};
