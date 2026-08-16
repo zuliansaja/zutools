@@ -98,8 +98,8 @@ footer.credit{text-align:center;color:var(--muted);font-size:11px;padding:24px 2
   position:sticky;top:0;background:var(--navy);z-index:5;
 }
 .back-btn{
-  width:36px;height:36px;border-radius:9px;background:var(--navy2);
-  border:1px solid #33404f;color:var(--off);font-size:16px;
+  width:36px;height:36px;background:transparent;
+  border:none;color:var(--off);font-size:16px;
   display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;
 }
 .module-bar h2{font-family:'Space Grotesk',sans-serif;font-size:17px;margin:0;color:var(--off);}
@@ -235,7 +235,7 @@ input:checked+.slider::before{transform:translateX(18px);}
       </button>
       <button class="tool-tag accent-teal" onclick="openModule('qr')">
         <div class="ic"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><line x1="14" y1="14" x2="14" y2="21"/><line x1="14" y1="14" x2="21" y2="14"/><line x1="17.5" y1="17.5" x2="21" y2="17.5"/><line x1="17.5" y1="17.5" x2="17.5" y2="21"/></svg></div>
-        <div><div class="lbl">QR Code</div><div class="sub">Buat QR Code dari teks</div></div>
+        <div><div class="lbl">QR Code</div><div class="sub">Dari teks & gambar</div></div>
       </button>
       <button class="tool-tag" onclick="openModule('zakat')">
         <div class="ic"><svg viewBox="0 0 24 24"><circle cx="7.5" cy="7.5" r="2.8"/><circle cx="16.5" cy="16.5" r="2.8"/><line x1="18.5" y1="5.5" x2="5.5" y2="18.5"/></svg></div>
@@ -532,14 +532,37 @@ RENDERERS.sholat=(el)=>{
 /* ============ 2. QR Code ============ */
 RENDERERS.qr=(el)=>{
   el.innerHTML=`
-    <div class="card">
+    <div class="tab-row">
+      <button class="tab-btn active" data-t="teks">Dari Teks</button>
+      <button class="tab-btn" data-t="gambar">Dari Gambar</button>
+    </div>
+    <div class="card" id="teksPane">
       <label class="field-lbl">Teks / Link</label>
       <input type="text" id="qrInput" placeholder="https://contoh.com atau teks apapun">
       <button class="btn full mb8" style="margin-top:10px" id="qrGenBtn">Generate QR</button>
       <div id="qrcodeCanvas" style="display:none"></div>
       <button class="btn ghost full" id="qrDownload" style="display:none;margin-top:10px">Download PNG</button>
     </div>
+    <div class="card" id="gambarPane" style="display:none">
+      <label class="dropzone" id="imgDz" for="qrImgFile">Tap untuk pilih gambar</label>
+      <input type="file" accept="image/*" id="qrImgFile" style="position:absolute;width:1px;height:1px;opacity:0;overflow:hidden">
+      <div class="hint" id="imgStatus" style="margin-top:8px">Gambar diproses langsung di HP kamu (tanpa upload ke server manapun), lalu dikompres otomatis biar muat jadi link/QR. Cocok buat logo/ikon kecil, bukan foto beresolusi tinggi.</div>
+      <div id="imgLinkBox" style="display:none;margin-top:12px">
+        <label class="field-lbl">Link gambar (bisa di-copy / dibuka di browser)</label>
+        <textarea id="imgLinkOut" rows="3" readonly style="font-family:'JetBrains Mono',monospace;font-size:11px"></textarea>
+        <button class="btn ghost full" id="imgLinkCopy" style="margin-top:8px">Copy Link</button>
+      </div>
+      <div id="imgQrCanvas" style="display:none;margin-top:12px"></div>
+      <button class="btn ghost full" id="imgQrDownload" style="display:none;margin-top:10px">Download QR (PNG)</button>
+    </div>
   `;
+  el.querySelectorAll('.tab-btn').forEach(b=>b.onclick=()=>{
+    el.querySelectorAll('.tab-btn').forEach(x=>x.classList.remove('active'));
+    b.classList.add('active');
+    el.querySelector('#teksPane').style.display=b.dataset.t==='teks'?'block':'none';
+    el.querySelector('#gambarPane').style.display=b.dataset.t==='gambar'?'block':'none';
+  });
+
   const canvasBox=el.querySelector('#qrcodeCanvas');
   el.querySelector('#qrGenBtn').onclick=()=>{
     const val=el.querySelector('#qrInput').value.trim();
@@ -553,6 +576,68 @@ RENDERERS.qr=(el)=>{
     const img=canvasBox.querySelector('img')||canvasBox.querySelector('canvas');
     const url=img.tagName==='CANVAS'?img.toDataURL('image/png'):img.src;
     const a=document.createElement('a');a.href=url;a.download='qrcode.png';a.click();
+  };
+
+  // ---- Gambar -> Link & Gambar -> QR ----
+  const imgStatus=el.querySelector('#imgStatus');
+  const imgLinkBox=el.querySelector('#imgLinkBox');
+  const imgLinkOut=el.querySelector('#imgLinkOut');
+  const imgQrCanvas=el.querySelector('#imgQrCanvas');
+  const MAX_URI_LEN=1800; // keeps the QR dense-but-scannable
+
+  function compressToDataURI(file, cb){
+    const reader=new FileReader();
+    reader.onload=(ev)=>{
+      const img=new Image();
+      img.onload=()=>{
+        function render(w,q){
+          const scale=Math.min(1,w/img.width);
+          const c=document.createElement('canvas');
+          c.width=Math.max(24,Math.round(img.width*scale));
+          c.height=Math.max(24,Math.round(img.height*scale));
+          c.getContext('2d').drawImage(img,0,0,c.width,c.height);
+          return c.toDataURL('image/jpeg',q);
+        }
+        let w=Math.min(240,img.width), q=0.6, uri=render(w,q), tries=0;
+        while(uri.length>MAX_URI_LEN && tries<14){
+          if(q>0.3){ q-=0.08; } else { w=Math.round(w*0.82); }
+          uri=render(w,q);
+          tries++;
+        }
+        cb(uri);
+      };
+      img.src=ev.target.result;
+    };
+    reader.readAsDataURL(file);
+  }
+
+  el.querySelector('#qrImgFile').onchange=(e)=>{
+    const file=e.target.files[0];
+    if(!file)return;
+    imgStatus.textContent='Memproses & mengompres gambar...';
+    imgLinkBox.style.display='none';
+    imgQrCanvas.style.display='none';
+    el.querySelector('#imgQrDownload').style.display='none';
+    compressToDataURI(file,(uri)=>{
+      imgLinkOut.value=uri;
+      imgLinkBox.style.display='block';
+      imgQrCanvas.innerHTML='';
+      imgQrCanvas.style.display='flex';
+      new QRCode(imgQrCanvas,{text:uri,width:220,height:220,colorDark:'#14181D',colorLight:'#ffffff'});
+      el.querySelector('#imgQrDownload').style.display='block';
+      const fits=uri.length<=MAX_URI_LEN;
+      imgStatus.textContent = fits
+        ? `Selesai — ukuran link ${uri.length.toLocaleString('id-ID')} karakter, aman buat di-scan.`
+        : `Selesai, tapi gambarnya cukup padat (${uri.length.toLocaleString('id-ID')} karakter) — mungkin butuh scanner QR yang bagus. Coba gambar lebih kecil/simpel kalau susah di-scan.`;
+    });
+  };
+  el.querySelector('#imgLinkCopy').onclick=()=>{
+    navigator.clipboard.writeText(imgLinkOut.value);
+  };
+  el.querySelector('#imgQrDownload').onclick=()=>{
+    const img=imgQrCanvas.querySelector('img')||imgQrCanvas.querySelector('canvas');
+    const url=img.tagName==='CANVAS'?img.toDataURL('image/png'):img.src;
+    const a=document.createElement('a');a.href=url;a.download='qrcode-gambar.png';a.click();
   };
 };
 
