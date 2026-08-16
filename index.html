@@ -1,0 +1,1216 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>ZuTools — Kotak Perkakas Harian</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<style>
+:root{
+  --navy:#1B2430;
+  --navy2:#232D3B;
+  --navy3:#2C3747;
+  --amber:#E8A33D;
+  --teal:#4F9C93;
+  --cream:#F1E9D8;
+  --ink:#14181D;
+  --off:#EDEFF2;
+  --muted:#8B96A5;
+  --danger:#D9695F;
+  --radius:14px;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+html,body{margin:0;padding:0;}
+body{
+  background:var(--navy);
+  color:var(--off);
+  font-family:'Inter',system-ui,-apple-system,sans-serif;
+  min-height:100vh;
+}
+@font-face{}
+.font-display{font-family:'Space Grotesk',Inter,system-ui,sans-serif;}
+.font-mono{font-family:'JetBrains Mono',ui-monospace,monospace;}
+
+a{color:inherit;}
+button{font-family:inherit;}
+input,select,textarea{font-family:inherit;}
+
+/* ---------- app shell ---------- */
+#app{max-width:520px;margin:0 auto;min-height:100vh;position:relative;padding-bottom:40px;}
+
+header.topbar{
+  padding:20px 20px 20px;
+  display:flex;align-items:center;gap:12px;
+}
+header.topbar .mark{
+  width:42px;height:42px;
+  flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;
+  color:#fff;
+}
+header.topbar h1{
+  font-family:'Space Grotesk',sans-serif;font-size:20px;margin:0;letter-spacing:-0.02em;color:var(--off);
+}
+
+/* ---------- home grid (pegboard) ---------- */
+#home{padding:6px 16px 10px;}
+.grid{display:grid;grid-template-columns:1fr 1fr;column-gap:12px;row-gap:20px;}
+.tool-tag{
+  position:relative;
+  background:var(--cream);
+  color:var(--ink);
+  border-radius:12px;
+  padding:20px 14px 14px;
+  cursor:pointer;
+  border:none;
+  text-align:left;
+  min-height:118px;
+  display:flex;flex-direction:column;justify-content:space-between;
+  box-shadow:0 4px 0 rgba(0,0,0,0.28), 0 8px 16px rgba(0,0,0,0.18);
+  transition:transform .12s ease, box-shadow .12s ease;
+}
+.tool-tag:active{transform:translateY(3px);box-shadow:0 1px 0 rgba(0,0,0,0.28);}
+.tool-tag::before{
+  content:'';position:absolute;top:-7px;left:50%;transform:translateX(-50%);
+  width:11px;height:11px;border-radius:50%;
+  background:var(--navy);
+  box-shadow:inset 0 1px 2px rgba(0,0,0,0.6), 0 0 0 3px var(--navy3);
+}
+.tool-tag .ic{width:42px;height:42px;border-radius:11px;display:flex;align-items:center;justify-content:center;background:rgba(20,24,29,0.07);flex-shrink:0;}
+.tool-tag .ic svg{width:22px;height:22px;stroke:#3d4a5c;fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round;}
+.tool-tag .lbl{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:14.5px;margin-top:10px;letter-spacing:-0.01em;}
+.tool-tag .sub{font-size:11px;color:#5b5347;margin-top:2px;}
+.tool-tag.accent-teal .ic{background:rgba(79,156,147,0.16);}
+.tool-tag.accent-teal .ic svg{stroke:var(--teal);}
+.tool-tag.accent-amber .ic{background:rgba(181,105,31,0.15);}
+.tool-tag.accent-amber .ic svg{stroke:#b5691f;}
+
+footer.credit{text-align:center;color:var(--muted);font-size:11px;padding:24px 20px 0;}
+
+/* ---------- module view ---------- */
+#module{display:none;}
+.module-bar{
+  display:flex;align-items:center;gap:10px;
+  padding:18px 16px 12px;
+  position:sticky;top:0;background:var(--navy);z-index:5;
+}
+.back-btn{
+  width:36px;height:36px;border-radius:9px;background:var(--navy2);
+  border:1px solid #33404f;color:var(--off);font-size:16px;
+  display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;
+}
+.module-bar h2{font-family:'Space Grotesk',sans-serif;font-size:17px;margin:0;color:var(--off);}
+.module-body{padding:6px 18px 30px;}
+
+.card{
+  background:var(--navy2);border:1px solid #303c4c;border-radius:var(--radius);
+  padding:16px;margin-bottom:14px;
+}
+label.field-lbl{display:block;font-size:12px;color:var(--muted);margin-bottom:6px;font-weight:600;letter-spacing:.01em;}
+input[type=text],input[type=number],input[type=date],input[type=time],input[type=datetime-local],select,textarea{
+  width:100%;background:var(--navy);border:1px solid #3a4657;color:var(--off);
+  border-radius:9px;padding:10px 12px;font-size:14.5px;outline:none;
+}
+select{
+  appearance:none;-webkit-appearance:none;-moz-appearance:none;
+  padding-right:34px;
+  background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%238B96A5' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><polyline points='6 9 12 15 18 9'/></svg>");
+  background-repeat:no-repeat;
+  background-position:right 12px center;
+  background-size:16px;
+}
+textarea{resize:none;}
+input:focus,select:focus,textarea:focus{border-color:var(--teal);}
+.row{display:flex;gap:10px;}
+.row>div{flex:1;}
+.mb8{margin-bottom:8px;}
+.mb12{margin-bottom:12px;}
+
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:6px;
+  background:var(--amber);color:var(--ink);border:none;border-radius:10px;
+  padding:11px 16px;font-weight:700;font-size:14px;cursor:pointer;
+  font-family:'Space Grotesk',sans-serif;
+  box-shadow:0 3px 0 #b5731f;
+}
+.btn:active{transform:translateY(2px);box-shadow:0 1px 0 #b5731f;}
+.btn.full{width:100%;}
+.btn.teal{background:var(--teal);box-shadow:0 3px 0 #366e67;}
+.btn.ghost{background:transparent;border:1px solid #3a4657;color:var(--off);box-shadow:none;}
+.btn.small{padding:7px 12px;font-size:12.5px;}
+.btn.danger{background:var(--danger);box-shadow:0 3px 0 #a34840;}
+
+.result-box{
+  background:var(--navy3);border-radius:10px;padding:14px;margin-top:10px;
+  font-family:'JetBrains Mono',monospace;
+}
+.result-box .big{font-size:22px;font-weight:700;color:var(--amber);}
+.muted{color:var(--muted);font-size:12.5px;}
+.hint{font-size:11.5px;color:var(--muted);margin-top:6px;line-height:1.5;}
+
+.list-item{
+  display:flex;align-items:center;gap:8px;background:var(--navy);
+  border:1px solid #33404f;border-radius:9px;padding:9px 10px;margin-bottom:8px;
+}
+.list-item input{flex:1;background:transparent;border:none;padding:2px;}
+.list-item .rm{background:none;border:none;color:var(--danger);font-size:17px;cursor:pointer;padding:0 4px;}
+
+.tab-row{display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap;}
+.tab-btn{
+  background:var(--navy2);border:1px solid #33404f;color:var(--muted);
+  border-radius:20px;padding:7px 13px;font-size:12.5px;font-weight:600;cursor:pointer;
+}
+.tab-btn.active{background:var(--teal);color:var(--ink);border-color:var(--teal);}
+
+.copy-row{display:flex;gap:8px;align-items:center;}
+.copy-row input{flex:1;}
+
+::placeholder{color:#5c6979;}
+canvas{max-width:100%;}
+#qrcodeCanvas{display:flex;justify-content:center;padding:14px;background:#fff;border-radius:10px;margin-top:10px;}
+
+.pw-out{
+  font-family:'JetBrains Mono',monospace;font-size:16.5px;word-break:break-all;
+  background:var(--navy3);border-radius:10px;padding:14px;color:var(--amber);
+}
+.strength-bar{height:6px;border-radius:4px;background:#33404f;margin-top:10px;overflow:hidden;}
+.strength-fill{height:100%;border-radius:4px;transition:all .2s ease;}
+
+.toggle-row{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid #2c3747;}
+.toggle-row:last-child{border-bottom:none;}
+.switch{position:relative;width:42px;height:24px;flex-shrink:0;}
+.switch input{opacity:0;width:0;height:0;}
+.slider{position:absolute;inset:0;background:#3a4657;border-radius:20px;cursor:pointer;transition:.2s;}
+.slider::before{content:'';position:absolute;width:18px;height:18px;left:3px;top:3px;background:#fff;border-radius:50%;transition:.2s;}
+input:checked+.slider{background:var(--teal);}
+input:checked+.slider::before{transform:translateX(18px);}
+
+.countdown-card{background:var(--navy2);border:1px solid #303c4c;border-radius:12px;padding:14px 16px;margin-bottom:10px;display:flex;justify-content:space-between;align-items:center;}
+.countdown-card .title{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:14.5px;}
+.countdown-card .when{font-size:11.5px;color:var(--muted);margin-top:2px;}
+.countdown-card .time{font-family:'JetBrains Mono',monospace;color:var(--amber);font-size:15px;font-weight:700;text-align:right;}
+
+.pomodoro-ring{width:210px;height:210px;margin:10px auto;position:relative;}
+.pomodoro-ring svg{transform:rotate(-90deg);}
+.pomodoro-time{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:'JetBrains Mono',monospace;font-size:36px;font-weight:700;color:var(--off);}
+.pomodoro-label{text-align:center;color:var(--muted);font-size:12.5px;margin-top:4px;text-transform:uppercase;letter-spacing:.08em;}
+
+.dropzone{
+  border:2px dashed #3a4657;border-radius:12px;padding:30px 16px;text-align:center;
+  color:var(--muted);font-size:13px;cursor:pointer;
+}
+.dropzone.drag{border-color:var(--teal);color:var(--teal);}
+.preview-img{max-width:100%;border-radius:10px;margin-top:10px;}
+
+.qibla-compass{width:200px;height:200px;margin:14px auto;position:relative;border-radius:50%;background:var(--navy3);border:2px solid #3a4657;}
+.qibla-needle{position:absolute;left:50%;top:50%;width:4px;height:80px;background:linear-gradient(var(--amber),transparent);transform-origin:bottom center;transform:translate(-50%,-100%);border-radius:3px;}
+.qibla-center{position:absolute;left:50%;top:50%;width:8px;height:8px;background:var(--off);border-radius:50%;transform:translate(-50%,-50%);}
+
+.prayer-row{display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid #2c3747;}
+.prayer-row:last-child{border-bottom:none;}
+.prayer-row .pname{font-weight:600;font-size:14px;}
+.prayer-row .ptime{font-family:'JetBrains Mono',monospace;color:var(--amber);font-weight:700;}
+.prayer-row.now{background:rgba(79,156,147,0.12);border-radius:8px;padding-left:8px;padding-right:8px;margin:0 -8px;}
+
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important;}}
+</style>
+</head>
+<body>
+<div id="app">
+
+  <div id="home">
+    <header class="topbar">
+      <div class="mark"><svg viewBox="0 0 24 24" width="30" height="30" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="7.2" r="3.4"/><path d="M4 21c0-4.3 3.5-6.3 8-6.3s8 2 8 6.3"/></svg></div>
+      <h1 id="greeting">ZuTools</h1>
+    </header>
+
+    <div class="grid">
+      <button class="tool-tag" onclick="openModule('sholat')">
+        <div class="ic"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><polygon points="12,7 14.2,12 12,17 9.8,12"/></svg></div>
+        <div><div class="lbl">Jadwal Sholat</div><div class="sub">+ Arah Kiblat</div></div>
+      </button>
+      <button class="tool-tag accent-teal" onclick="openModule('qr')">
+        <div class="ic"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><line x1="14" y1="14" x2="14" y2="21"/><line x1="14" y1="14" x2="21" y2="14"/><line x1="17.5" y1="17.5" x2="21" y2="17.5"/><line x1="17.5" y1="17.5" x2="17.5" y2="21"/></svg></div>
+        <div><div class="lbl">QR Code</div><div class="sub">Buat & Scan</div></div>
+      </button>
+      <button class="tool-tag" onclick="openModule('zakat')">
+        <div class="ic"><svg viewBox="0 0 24 24"><circle cx="7.5" cy="7.5" r="2.8"/><circle cx="16.5" cy="16.5" r="2.8"/><line x1="18.5" y1="5.5" x2="5.5" y2="18.5"/></svg></div>
+        <div><div class="lbl">Kalkulator Diskon</div><div class="sub">Diskon bertingkat</div></div>
+      </button>
+      <button class="tool-tag accent-amber" onclick="openModule('split')">
+        <div class="ic"><svg viewBox="0 0 24 24"><path d="M6 2.5h12v18.5l-2-1.4-2 1.4-2-1.4-2 1.4-2-1.4-2 1.4V2.5z"/><line x1="8.5" y1="7.5" x2="15.5" y2="7.5"/><line x1="8.5" y1="11.5" x2="15.5" y2="11.5"/></svg></div>
+        <div><div class="lbl">Split Bill</div><div class="sub">Patungan bareng</div></div>
+      </button>
+      <button class="tool-tag accent-teal" onclick="openModule('password')">
+        <div class="ic"><svg viewBox="0 0 24 24"><circle cx="8" cy="15.5" r="4"/><line x1="10.8" y1="12.7" x2="20" y2="3.5"/><line x1="15.8" y1="7.7" x2="18.6" y2="10.5"/><line x1="12.8" y1="10.7" x2="15.3" y2="13.2"/></svg></div>
+        <div><div class="lbl">Password</div><div class="sub">Generator aman</div></div>
+      </button>
+      <button class="tool-tag" onclick="openModule('convert')">
+        <div class="ic"><svg viewBox="0 0 24 24"><path d="M4 8h13"/><path d="M14.5 4.5 17.5 8l-3 3.5"/><path d="M20 16H7"/><path d="M9.5 19.5 6.5 16l3-3.5"/></svg></div>
+        <div><div class="lbl">Unit Converter</div><div class="sub">Panjang, berat, dll</div></div>
+      </button>
+      <button class="tool-tag accent-amber" onclick="openModule('pomodoro')">
+        <div class="ic"><svg viewBox="0 0 24 24"><path d="M5 9c0-2.2 1.6-3.5 3.3-3.5v2c-1 0-1.5.5-1.5 1.2h1.5v4.3H5V9z"/><path d="M13.4 9c0-2.2 1.6-3.5 3.3-3.5v2c-1 0-1.5.5-1.5 1.2h1.5v4.3h-3.3V9z"/></svg></div>
+        <div><div class="lbl">Kata Motivasi</div><div class="sub">100 quotes</div></div>
+      </button>
+      <button class="tool-tag" onclick="openModule('compress')">
+        <div class="ic"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2.2"/><circle cx="8.7" cy="9.5" r="1.5"/><path d="M21 15.5l-5-5-5.5 5.5-2.5-2.5-4 4"/></svg></div>
+        <div><div class="lbl">Kompres Gambar</div><div class="sub">Perkecil ukuran</div></div>
+      </button>
+      <button class="tool-tag accent-teal" onclick="openModule('name')">
+        <div class="ic"><svg viewBox="0 0 24 24"><rect x="3.5" y="3.5" width="17" height="17" rx="3.2"/><circle cx="8.2" cy="8.2" r="1.3" fill="currentColor" stroke="none"/><circle cx="15.8" cy="8.2" r="1.3" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="1.3" fill="currentColor" stroke="none"/><circle cx="8.2" cy="15.8" r="1.3" fill="currentColor" stroke="none"/><circle cx="15.8" cy="15.8" r="1.3" fill="currentColor" stroke="none"/></svg></div>
+        <div><div class="lbl">Undian Nama</div><div class="sub">Acak & bagi grup</div></div>
+      </button>
+      <button class="tool-tag accent-amber" onclick="openModule('countdown')">
+        <div class="ic"><svg viewBox="0 0 24 24"><path d="M12 3a9 9 0 1 0 .001 0z"/><path d="M12 3c3.5 3 3.5 6.5 3.5 9.5 0 2.2-.6 3.3-2.3 3.3-1.3 0-1.9-.7-1.9-1.7 0-1.4 1.3-1.6 1.3-3.1 0-2-2-2.5-2-5.5"/><circle cx="8" cy="9.5" r="1.1" fill="currentColor" stroke="none"/><circle cx="9.5" cy="14.5" r="1.1" fill="currentColor" stroke="none"/></svg></div>
+        <div><div class="lbl">Color Palette</div><div class="sub">Generator warna</div></div>
+      </button>
+      <button class="tool-tag" onclick="openModule('htmlpreview')">
+        <div class="ic"><svg viewBox="0 0 24 24"><polyline points="8 5 3 12 8 19"/><polyline points="16 5 21 12 16 19"/></svg></div>
+        <div><div class="lbl">HTML Preview</div><div class="sub">Tempel & jadi file</div></div>
+      </button>
+      <button class="tool-tag accent-teal" onclick="openModule('age')">
+        <div class="ic"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.5 3.5"/></svg></div>
+        <div><div class="lbl">Kalkulator Usia</div><div class="sub">Detail & akurat</div></div>
+      </button>
+    </div>
+
+  </div>
+
+  <div id="module">
+    <div class="module-bar">
+      <button class="back-btn" onclick="closeModule()"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg></button>
+      <h2 id="moduleTitle">Tool</h2>
+    </div>
+    <div class="module-body" id="moduleBody"></div>
+  </div>
+
+</div>
+
+<script>
+/* ============ shell nav ============ */
+const home=document.getElementById('home');
+const moduleView=document.getElementById('module');
+const moduleTitle=document.getElementById('moduleTitle');
+const moduleBody=document.getElementById('moduleBody');
+
+(function setGreeting(){
+  const h=new Date().getHours();
+  let g='Selamat Malam';
+  if(h>=4 && h<11) g='Selamat Pagi';
+  else if(h>=11 && h<15) g='Selamat Siang';
+  else if(h>=15 && h<18) g='Selamat Sore';
+  const el=document.getElementById('greeting');
+  if(el) el.textContent=g;
+})();
+
+const TITLES={
+  sholat:'Jadwal Sholat & Kiblat', qr:'QR Code', zakat:'Kalkulator Diskon',
+  split:'Split Bill', password:'Password Generator', convert:'Unit Converter',
+  pomodoro:'Kata Motivasi', compress:'Kompres Gambar', name:'Undian Nama',
+  countdown:'Color Palette Generator', htmlpreview:'HTML Preview & Export',
+  age:'Kalkulator Usia Detail'
+};
+const RENDERERS={};
+let cleanupFn=null;
+
+function openModule(id, fromHistory){
+  moduleTitle.textContent=TITLES[id];
+  moduleBody.innerHTML='';
+  home.style.display='none';
+  moduleView.style.display='block';
+  window.scrollTo(0,0);
+  if(RENDERERS[id]) cleanupFn=RENDERERS[id](moduleBody)||null;
+  if(!fromHistory){
+    try{ history.pushState({module:id}, ''); }catch(e){ /* history API unavailable in this context */ }
+  }
+}
+function actuallyCloseModule(){
+  if(typeof cleanupFn==='function') cleanupFn();
+  cleanupFn=null;
+  moduleView.style.display='none';
+  home.style.display='block';
+}
+function closeModule(){
+  // Triggered by the on-screen back button — go through history so it stays
+  // in sync with the hardware/gesture back button.
+  if(history.state && history.state.module){ history.back(); }
+  else { actuallyCloseModule(); }
+}
+window.addEventListener('popstate', (e)=>{
+  if(e.state && e.state.module){
+    openModule(e.state.module, true);
+  } else {
+    actuallyCloseModule();
+  }
+});
+
+/* ============ 1. Jadwal Sholat + Kiblat ============ */
+RENDERERS.sholat=(el)=>{
+  el.innerHTML=`
+    <div class="card">
+      <button class="btn full" id="locBtn"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><path d="M12 21s7-6.5 7-12a7 7 0 1 0-14 0c0 5.5 7 12 7 12z"/><circle cx="12" cy="9" r="2.3"/></svg> Deteksi Lokasi Saya</button>
+      <div class="hint" id="locStatus">Izinkan akses lokasi untuk hitung jadwal sholat & arah kiblat yang akurat.</div>
+    </div>
+    <div class="card" id="prayerCard" style="display:none">
+      <div class="muted mb8" id="prayerCity">—</div>
+      <div id="prayerList"></div>
+    </div>
+    <div class="card" id="qiblaCard" style="display:none">
+      <label class="field-lbl">Arah Kiblat</label>
+      <div class="qibla-compass"><div class="qibla-needle" id="qNeedle"></div><div class="qibla-center"></div></div>
+      <div class="hint" style="text-align:center" id="qDeg">—</div>
+      <button class="btn teal full" id="compassBtn" style="margin-top:12px;display:none">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><circle cx="12" cy="12" r="9"/><polygon points="12,7 14.2,12 12,17 9.8,12"/></svg>
+        Aktifkan Kompas
+      </button>
+      <div class="hint" style="text-align:center;margin-top:6px" id="compassStatus">Pegang HP tegak lurus di depan badan (seperti mau lihat layar), lalu putar badan pelan sampai jarum lurus ke atas.</div>
+    </div>
+  `;
+  const locBtn=el.querySelector('#locBtn');
+  const locStatus=el.querySelector('#locStatus');
+  const prayerCard=el.querySelector('#prayerCard');
+  const qiblaCard=el.querySelector('#qiblaCard');
+  const needle=el.querySelector('#qNeedle');
+  const qDeg=el.querySelector('#qDeg');
+  const compassBtn=el.querySelector('#compassBtn');
+  const compassStatus=el.querySelector('#compassStatus');
+
+  let qiblaBrng=0;
+  let orientationHandler=null;
+  let compassActive=false;
+  let smoothedHeading=null;
+
+  function calcQibla(lat,lon){
+    const kLat=21.4225*Math.PI/180, kLon=39.8262*Math.PI/180;
+    const la=lat*Math.PI/180, lo=lon*Math.PI/180;
+    const dLon=kLon-lo;
+    const y=Math.sin(dLon);
+    const x=Math.cos(la)*Math.tan(kLat)-Math.sin(la)*Math.cos(dLon);
+    let brng=Math.atan2(y,x)*180/Math.PI;
+    return (brng+360)%360;
+  }
+
+  function setNeedle(rotation){
+    needle.style.transform=`translate(-50%,-100%) rotate(${rotation}deg)`;
+  }
+
+  function getScreenAngle(){
+    if(screen.orientation && typeof screen.orientation.angle==='number') return screen.orientation.angle;
+    if(typeof window.orientation==='number') return window.orientation;
+    return 0;
+  }
+
+  // shortest-path smoothing across the 0/360 wrap so the needle never spins the long way around
+  function smoothAngle(prev, next, factor){
+    if(prev===null) return next;
+    let diff=((next-prev+540)%360)-180;
+    return (prev+diff*factor+360)%360;
+  }
+
+  function attachCompass(){
+    orientationHandler=(e)=>{
+      let heading=null;
+      if(typeof e.webkitCompassHeading!=='undefined' && e.webkitCompassHeading!==null){
+        // iOS: already true-north compass heading, screen-orientation compensated by the OS
+        heading=e.webkitCompassHeading;
+      } else if(e.alpha!==null && e.alpha!==undefined){
+        // Android: alpha is counter-clockwise from device's initial reference frame,
+        // compensate for current screen rotation (portrait/landscape) for accuracy
+        const screenAngle=getScreenAngle();
+        heading=(360-e.alpha-screenAngle+360)%360;
+      }
+      if(heading===null)return;
+      smoothedHeading=smoothAngle(smoothedHeading, heading, 0.25);
+      const rotation=(qiblaBrng-smoothedHeading+360)%360;
+      setNeedle(rotation);
+      const diff=Math.min(rotation,360-rotation);
+      qDeg.textContent = diff<8 ? 'Lurus! HP sudah mengarah ke kiblat 🎯' : `Putar ${rotation>180?'kiri':'kanan'} — ${rotation.toFixed(0)}° lagi`;
+    };
+    const evName = 'ondeviceorientationabsolute' in window ? 'deviceorientationabsolute' : 'deviceorientation';
+    window.addEventListener(evName, orientationHandler, true);
+    compassActive=true;
+    compassBtn.style.display='none';
+    compassStatus.textContent='Pegang HP tegak lurus di depan badan (seperti mau lihat layar), lalu putar badan pelan sampai jarum lurus ke atas.';
+  }
+
+  async function tryActivateCompass(){
+    if(compassActive)return;
+    if(typeof DeviceOrientationEvent!=='undefined' && typeof DeviceOrientationEvent.requestPermission==='function'){
+      try{
+        const perm=await DeviceOrientationEvent.requestPermission();
+        if(perm==='granted'){ attachCompass(); }
+        else { compassBtn.style.display='block'; compassStatus.textContent='Izin sensor ditolak. Tap tombol untuk coba lagi.'; }
+      }catch(e){
+        compassBtn.style.display='block';
+        compassStatus.textContent='Tap tombol untuk aktifkan kompas.';
+      }
+    } else if(window.DeviceOrientationEvent){
+      attachCompass();
+    } else {
+      compassStatus.textContent='HP/browser ini tidak mendukung sensor kompas. Arah di atas tetap akurat berdasarkan lokasi GPS.';
+    }
+  }
+
+  compassBtn.onclick=tryActivateCompass;
+
+  locBtn.onclick=async ()=>{
+    // Request the compass-sensor permission synchronously inside the click handler
+    // (iOS only grants this while it's still tied to a real user tap).
+    let orientationPreauthorized=false;
+    if(typeof DeviceOrientationEvent!=='undefined' && typeof DeviceOrientationEvent.requestPermission==='function'){
+      try{
+        const perm=await DeviceOrientationEvent.requestPermission();
+        orientationPreauthorized = perm==='granted';
+      }catch(e){ orientationPreauthorized=false; }
+    } else if(window.DeviceOrientationEvent){
+      orientationPreauthorized=true;
+    }
+
+    locStatus.textContent='Mencari lokasi...';
+    navigator.geolocation.getCurrentPosition(async (pos)=>{
+      const {latitude:lat,longitude:lon}=pos.coords;
+      locStatus.textContent='Lokasi ditemukan. Mengambil jadwal sholat...';
+      try{
+        const [res, geoRes]=await Promise.all([
+          fetch(`https://api.aladhan.com/v1/timings?latitude=${lat}&longitude=${lon}&method=20`),
+          fetch(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lon}&localityLanguage=id`).catch(()=>null)
+        ]);
+        const data=await res.json();
+        const t=data.data.timings;
+        let placeLabel=`Zona waktu: ${data.data.meta.timezone}`;
+        if(geoRes && geoRes.ok){
+          try{
+            const geo=await geoRes.json();
+            const city=geo.city||geo.locality||geo.principalSubdivision||'';
+            const region=geo.principalSubdivision&&geo.principalSubdivision!==city?geo.principalSubdivision:'';
+            if(city) placeLabel=`Jadwal untuk ${city}${region?', '+region:''} (berdasarkan GPS)`;
+          }catch(e){}
+        }
+        el.querySelector('#prayerCity').textContent=placeLabel;
+        const order=[['Subuh',t.Fajr],['Terbit',t.Sunrise],['Dzuhur',t.Dhuhr],['Ashar',t.Asr],['Maghrib',t.Maghrib],['Isya',t.Isha]];
+        const now=new Date();
+        const nowMin=now.getHours()*60+now.getMinutes();
+        function toMin(str){const [h,m]=str.split(':').map(Number);return h*60+m;}
+        let activeIdx=-1;
+        for(let i=0;i<order.length;i++){if(toMin(order[i][1])<=nowMin) activeIdx=i;}
+        el.querySelector('#prayerList').innerHTML=order.map(([n,tm],i)=>
+          `<div class="prayer-row ${i===activeIdx?'now':''}"><span class="pname">${n}</span><span class="ptime">${tm}</span></div>`
+        ).join('');
+        prayerCard.style.display='block';
+        locStatus.textContent='';
+      }catch(e){
+        locStatus.textContent='Gagal ambil jadwal sholat. Cek koneksi internet.';
+      }
+      qiblaBrng=calcQibla(lat,lon);
+      setNeedle(qiblaBrng);
+      qDeg.textContent=`${qiblaBrng.toFixed(1)}° dari Utara (searah jarum jam)`;
+      qiblaCard.style.display='block';
+      // auto-activate compass right away
+      if(orientationPreauthorized || (window.DeviceOrientationEvent && typeof DeviceOrientationEvent.requestPermission!=='function')){
+        attachCompass();
+      } else {
+        compassBtn.style.display='block';
+      }
+    },(err)=>{
+      locStatus.textContent='Akses lokasi ditolak / gagal. Aktifkan GPS dan izinkan akses lokasi.';
+    });
+  };
+
+  return ()=>{
+    if(orientationHandler){
+      const evName = 'ondeviceorientationabsolute' in window ? 'deviceorientationabsolute' : 'deviceorientation';
+      window.removeEventListener(evName, orientationHandler, true);
+    }
+  };
+};
+
+/* ============ 2. QR Code ============ */
+RENDERERS.qr=(el)=>{
+  el.innerHTML=`
+    <div class="card">
+      <label class="field-lbl">Teks / Link</label>
+      <input type="text" id="qrInput" placeholder="https://contoh.com atau teks apapun">
+      <button class="btn full mb8" style="margin-top:10px" id="qrGenBtn">Generate QR</button>
+      <div id="qrcodeCanvas" style="display:none"></div>
+      <button class="btn ghost full" id="qrDownload" style="display:none;margin-top:10px">Download PNG</button>
+    </div>
+  `;
+  const canvasBox=el.querySelector('#qrcodeCanvas');
+  el.querySelector('#qrGenBtn').onclick=()=>{
+    const val=el.querySelector('#qrInput').value.trim();
+    if(!val)return;
+    canvasBox.innerHTML='';
+    canvasBox.style.display='flex';
+    new QRCode(canvasBox,{text:val,width:200,height:200,colorDark:'#14181D',colorLight:'#ffffff'});
+    el.querySelector('#qrDownload').style.display='block';
+  };
+  el.querySelector('#qrDownload').onclick=()=>{
+    const img=canvasBox.querySelector('img')||canvasBox.querySelector('canvas');
+    const url=img.tagName==='CANVAS'?img.toDataURL('image/png'):img.src;
+    const a=document.createElement('a');a.href=url;a.download='qrcode.png';a.click();
+  };
+};
+
+/* ============ 3. Kalkulator Diskon Bertingkat ============ */
+RENDERERS.zakat=(el)=>{
+  el.innerHTML=`
+    <div class="card">
+      <label class="field-lbl">Harga awal — Rp</label>
+      <input type="number" id="dkHarga" placeholder="0">
+      <label class="field-lbl" style="margin-top:12px">Diskon bertingkat (%)</label>
+      <div id="dkList"></div>
+      <button class="btn ghost small" id="dkAdd">+ Tambah Diskon</button>
+    </div>
+    <button class="btn full teal" id="dkCalc">Hitung Harga Akhir</button>
+    <div class="result-box" id="dkResult" style="display:none"></div>
+  `;
+  let discs=[{id:1,val:''},{id:2,val:''}];
+  let nextId=3;
+  const list=el.querySelector('#dkList');
+  function renderDiscs(){
+    list.innerHTML=discs.map((d,i)=>`
+      <div class="list-item">
+        <input type="number" placeholder="misal ${i===0?50:20}" value="${d.val}" data-id="${d.id}" class="dk-in">
+        <span class="muted" style="padding-right:2px">%</span>
+        ${discs.length>1?`<button class="rm" data-rm="${d.id}">✕</button>`:''}
+      </div>`).join('');
+    list.querySelectorAll('.dk-in').forEach(inp=>inp.oninput=(e)=>{
+      const d=discs.find(x=>x.id==e.target.dataset.id); if(d) d.val=e.target.value;
+    });
+    list.querySelectorAll('[data-rm]').forEach(b=>b.onclick=(e)=>{
+      discs=discs.filter(d=>d.id!=e.target.dataset.rm); renderDiscs();
+    });
+  }
+  renderDiscs();
+  el.querySelector('#dkAdd').onclick=()=>{ discs.push({id:nextId++,val:''}); renderDiscs(); };
+  el.querySelector('#dkCalc').onclick=()=>{
+    const harga=parseFloat(el.querySelector('#dkHarga').value)||0;
+    let sisa=harga;
+    let steps=[];
+    discs.forEach(d=>{
+      const pct=parseFloat(d.val)||0;
+      if(pct>0){
+        const potong=sisa*(pct/100);
+        sisa-=potong;
+        steps.push(`Diskon ${pct}%: -Rp ${potong.toLocaleString('id-ID',{maximumFractionDigits:0})}`);
+      }
+    });
+    const box=el.querySelector('#dkResult');box.style.display='block';
+    const hemat=harga-sisa;
+    box.innerHTML=`${steps.map(s=>`<div class="muted">${s}</div>`).join('')}
+      <div class="big" style="margin-top:8px">Rp ${sisa.toLocaleString('id-ID',{maximumFractionDigits:0})}</div>
+      <div class="hint" style="margin-top:4px">Total hemat: Rp ${hemat.toLocaleString('id-ID',{maximumFractionDigits:0})}</div>`;
+  };
+};
+
+/* ============ 4. Split Bill ============ */
+RENDERERS.split=(el)=>{
+  let people=[{name:'Kamu',id:1}];
+  let nextId=2;
+  el.innerHTML=`
+    <div class="card">
+      <label class="field-lbl">Total tagihan — Rp</label>
+      <input type="number" id="sTotal" placeholder="0">
+      <div class="row" style="margin-top:10px">
+        <div><label class="field-lbl">Pajak/service (%)</label><input type="number" id="sTax" placeholder="0"></div>
+        <div><label class="field-lbl">Biaya lain — Rp</label><input type="number" id="sExtra" placeholder="0"></div>
+      </div>
+    </div>
+    <div class="card">
+      <label class="field-lbl">Orang yang patungan</label>
+      <div id="peopleList"></div>
+      <button class="btn ghost small" id="addPerson">+ Tambah Orang</button>
+    </div>
+    <button class="btn full teal" id="splitBtn">Hitung Pembagian</button>
+    <div class="card" id="splitResult" style="display:none"></div>
+  `;
+  const list=el.querySelector('#peopleList');
+  function renderPeople(){
+    list.innerHTML=people.map(p=>`
+      <div class="list-item">
+        <input type="text" value="${p.name}" data-id="${p.id}" class="pname-in">
+        ${people.length>1?`<button class="rm" data-rm="${p.id}">✕</button>`:''}
+      </div>`).join('');
+    list.querySelectorAll('.pname-in').forEach(inp=>inp.oninput=(e)=>{
+      const p=people.find(x=>x.id==e.target.dataset.id); if(p) p.name=e.target.value;
+    });
+    list.querySelectorAll('[data-rm]').forEach(b=>b.onclick=(e)=>{
+      people=people.filter(p=>p.id!=e.target.dataset.rm); renderPeople();
+    });
+  }
+  renderPeople();
+  el.querySelector('#addPerson').onclick=()=>{
+    people.push({name:`Orang ${people.length+1}`,id:nextId++}); renderPeople();
+  };
+  el.querySelector('#splitBtn').onclick=()=>{
+    const total=parseFloat(el.querySelector('#sTotal').value)||0;
+    const taxPct=parseFloat(el.querySelector('#sTax').value)||0;
+    const extra=parseFloat(el.querySelector('#sExtra').value)||0;
+    const grand=total*(1+taxPct/100)+extra;
+    const per=grand/Math.max(people.length,1);
+    const box=el.querySelector('#splitResult');
+    box.style.display='block';
+    box.innerHTML=`<div class="muted">Total keseluruhan: Rp ${grand.toLocaleString('id-ID',{maximumFractionDigits:0})}</div>
+      <div class="big" style="margin:8px 0">Rp ${per.toLocaleString('id-ID',{maximumFractionDigits:0})} / orang</div>
+      ${people.map(p=>`<div class="prayer-row"><span class="pname">${p.name}</span><span class="ptime">Rp ${per.toLocaleString('id-ID',{maximumFractionDigits:0})}</span></div>`).join('')}`;
+  };
+};
+
+/* ============ 5. Password Generator ============ */
+RENDERERS.password=(el)=>{
+  el.innerHTML=`
+    <div class="card">
+      <div class="pw-out" id="pwOut">tap generate ↓</div>
+      <div class="strength-bar"><div class="strength-fill" id="pwStrength" style="width:0%"></div></div>
+      <div class="hint" id="pwStrengthLabel"></div>
+    </div>
+    <div class="card">
+      <label class="field-lbl">Panjang: <span id="pwLenVal">16</span> karakter</label>
+      <input type="range" id="pwLen" min="6" max="48" value="16" style="width:100%">
+      <div class="toggle-row"><span>Huruf besar (A-Z)</span><label class="switch"><input type="checkbox" id="optUpper" checked><span class="slider"></span></label></div>
+      <div class="toggle-row"><span>Huruf kecil (a-z)</span><label class="switch"><input type="checkbox" id="optLower" checked><span class="slider"></span></label></div>
+      <div class="toggle-row"><span>Angka (0-9)</span><label class="switch"><input type="checkbox" id="optNum" checked><span class="slider"></span></label></div>
+      <div class="toggle-row"><span>Simbol (!@#$)</span><label class="switch"><input type="checkbox" id="optSym"><span class="slider"></span></label></div>
+    </div>
+    <button class="btn full" id="pwGen">Generate Password</button>
+    <button class="btn ghost full" id="pwCopy" style="margin-top:10px">Copy ke Clipboard</button>
+  `;
+  const lenSlider=el.querySelector('#pwLen'), lenVal=el.querySelector('#pwLenVal');
+  lenSlider.oninput=()=>lenVal.textContent=lenSlider.value;
+  function gen(){
+    const len=parseInt(lenSlider.value);
+    const up='ABCDEFGHJKLMNPQRSTUVWXYZ', lo='abcdefghijkmnopqrstuvwxyz', num='23456789', sym='!@#$%^&*()-_=+?';
+    let pool='';
+    if(el.querySelector('#optUpper').checked) pool+=up;
+    if(el.querySelector('#optLower').checked) pool+=lo;
+    if(el.querySelector('#optNum').checked) pool+=num;
+    if(el.querySelector('#optSym').checked) pool+=sym;
+    if(!pool){el.querySelector('#pwOut').textContent='Pilih minimal 1 jenis karakter';return;}
+    const arr=new Uint32Array(len); crypto.getRandomValues(arr);
+    let out=''; for(let i=0;i<len;i++) out+=pool[arr[i]%pool.length];
+    el.querySelector('#pwOut').textContent=out;
+    let score=0;
+    if(len>=12)score+=30; if(len>=16)score+=20;
+    if(el.querySelector('#optUpper').checked)score+=12;
+    if(el.querySelector('#optLower').checked)score+=12;
+    if(el.querySelector('#optNum').checked)score+=13;
+    if(el.querySelector('#optSym').checked)score+=13;
+    score=Math.min(score,100);
+    const fill=el.querySelector('#pwStrength');
+    fill.style.width=score+'%';
+    fill.style.background = score>70?'#4F9C93':score>40?'#E8A33D':'#D9695F';
+    el.querySelector('#pwStrengthLabel').textContent = score>70?'Kuat':score>40?'Sedang':'Lemah';
+  }
+  el.querySelector('#pwGen').onclick=gen;
+  el.querySelector('#pwCopy').onclick=()=>{
+    const txt=el.querySelector('#pwOut').textContent;
+    if(txt && txt!=='tap generate ↓') navigator.clipboard.writeText(txt);
+  };
+  gen();
+};
+
+/* ============ 6. Unit Converter ============ */
+RENDERERS.convert=(el)=>{
+  const CATS={
+    Panjang:{m:1,km:1000,cm:0.01,mm:0.001,mile:1609.34,yard:0.9144,feet:0.3048,inch:0.0254},
+    Berat:{kg:1,gram:0.001,ton:1000,pound:0.453592,ons:0.1},
+    Suhu:'temp',
+    Volume:{liter:1,ml:0.001,m3:1000,gallon:3.78541,cup:0.24},
+    Kecepatan:{'km/jam':1,'m/detik':3.6,'mil/jam':1.60934,knot:1.852},
+    Data:{byte:1,KB:1024,MB:1048576,GB:1073741824,TB:1099511627776}
+  };
+  el.innerHTML=`
+    <div class="card">
+      <label class="field-lbl">Kategori</label>
+      <select id="cvCat">${Object.keys(CATS).map(c=>`<option>${c}</option>`).join('')}</select>
+      <div class="row" style="margin-top:12px">
+        <div>
+          <label class="field-lbl">Dari</label>
+          <input type="number" id="cvFrom" value="1">
+          <select id="cvFromUnit" style="margin-top:8px"></select>
+        </div>
+        <div>
+          <label class="field-lbl">Ke</label>
+          <input type="text" id="cvTo" readonly>
+          <select id="cvToUnit" style="margin-top:8px"></select>
+        </div>
+      </div>
+    </div>
+  `;
+  const cat=el.querySelector('#cvCat'), fromU=el.querySelector('#cvFromUnit'), toU=el.querySelector('#cvToUnit');
+  const fromN=el.querySelector('#cvFrom'), toN=el.querySelector('#cvTo');
+  function fillUnits(){
+    const c=cat.value;
+    if(CATS[c]==='temp'){
+      fromU.innerHTML=['Celsius','Fahrenheit','Kelvin'].map(u=>`<option>${u}</option>`).join('');
+      toU.innerHTML=fromU.innerHTML; toU.value='Fahrenheit';
+    } else {
+      const units=Object.keys(CATS[c]);
+      fromU.innerHTML=units.map(u=>`<option>${u}</option>`).join('');
+      toU.innerHTML=units.map(u=>`<option>${u}</option>`).join('');
+      toU.selectedIndex=1%units.length;
+    }
+    compute();
+  }
+  function tempToC(v,u){ if(u==='Celsius')return v; if(u==='Fahrenheit')return (v-32)*5/9; return v-273.15; }
+  function cFromTemp(v,u){ if(u==='Celsius')return v; if(u==='Fahrenheit')return v*9/5+32; return v+273.15; }
+  function compute(){
+    const c=cat.value;
+    const v=parseFloat(fromN.value)||0;
+    if(CATS[c]==='temp'){
+      const cel=tempToC(v,fromU.value);
+      toN.value=cFromTemp(cel,toU.value).toLocaleString('id-ID',{maximumFractionDigits:4});
+    } else {
+      const table=CATS[c];
+      const base=v*table[fromU.value];
+      const res=base/table[toU.value];
+      toN.value=res.toLocaleString('id-ID',{maximumFractionDigits:6});
+    }
+  }
+  [cat].forEach(x=>x.onchange=fillUnits);
+  [fromU,toU,fromN].forEach(x=>x.addEventListener('input',compute));
+  fillUnits();
+};
+
+/* ============ 7. Kata Motivasi (Random Quote) ============ */
+const QUOTES=[
+["Hidup ini seperti sepeda. Agar tetap seimbang, kau harus terus bergerak.","Albert Einstein"],
+["Satu-satunya cara melakukan pekerjaan hebat adalah mencintai apa yang kau kerjakan.","Steve Jobs"],
+["Kesuksesan bukan akhir, kegagalan bukan hal fatal. Yang penting adalah keberanian untuk terus melangkah.","Winston Churchill"],
+["Jangan tunggu kesempatan, ciptakan kesempatan itu.","George Bernard Shaw"],
+["Masa depan milik mereka yang percaya pada keindahan mimpi mereka.","Eleanor Roosevelt"],
+["Kegagalan adalah bumbu yang memberi rasa pada kesuksesan.","Truman Capote"],
+["Waktu itu terbatas, jangan habiskan dengan menjalani hidup orang lain.","Steve Jobs"],
+["Bermimpilah setinggi langit, jika engkau jatuh, engkau akan jatuh di antara bintang-bintang.","Ir. Soekarno"],
+["Beri aku 1000 orang tua, akan kucabut Semeru dari akarnya. Beri aku 10 pemuda, niscaya akan kuguncang dunia.","Ir. Soekarno"],
+["Orang yang tidak pernah gagal adalah orang yang tidak pernah mencoba sesuatu yang baru.","Albert Einstein"],
+["Kualitas bukanlah suatu kebetulan, ia selalu hasil dari usaha yang cerdas.","John Ruskin"],
+["Jangan takut melangkah pelan, takutlah untuk berhenti.","Pepatah Tiongkok"],
+["Kegagalan hanyalah kesempatan untuk memulai lagi dengan lebih cerdas.","Henry Ford"],
+["Percayalah kamu bisa, maka kamu sudah setengah jalan menuju ke sana.","Theodore Roosevelt"],
+["Bukan gunung yang kita taklukkan, tapi diri kita sendiri.","Edmund Hillary"],
+["Kesempatan tidak datang dua kali, tapi kerja keras bisa datang setiap hari.","Anonim"],
+["Belajarlah dari kemarin, hiduplah untuk hari ini, berharaplah untuk esok.","Albert Einstein"],
+["Kita tidak bisa mengubah arah angin, tapi kita bisa menyesuaikan arah layar.","Jimmy Dean"],
+["Hal terbaik tentang masa depan adalah ia datang satu hari dalam satu waktu.","Abraham Lincoln"],
+["Jangan hitung hari, buatlah hari-harimu berarti.","Muhammad Ali"],
+["Semua mimpi bisa terwujud, jika kita punya keberanian untuk mengejarnya.","Walt Disney"],
+["Kerja keras mengalahkan bakat ketika bakat tidak bekerja keras.","Tim Notke"],
+["Ilmu itu lebih baik daripada harta. Ilmu menjaga engkau, sedang engkau menjaga harta.","Ali bin Abi Thalib"],
+["Barang siapa bersungguh-sungguh, pasti akan berhasil.","Pepatah Arab"],
+["Sesungguhnya sesudah kesulitan itu ada kemudahan.","QS. Al-Insyirah: 6"],
+["Allah tidak membebani seseorang melainkan sesuai dengan kesanggupannya.","QS. Al-Baqarah: 286"],
+["Rencanakan hari esokmu, tapi jangan lupa syukuri hari ini.","Anonim"],
+["Orang sukses bukan yang tidak pernah jatuh, tapi yang selalu bangkit setelah jatuh.","Anonim"],
+["Cara terbaik memprediksi masa depan adalah menciptakannya.","Peter Drucker"],
+["Kegigihan adalah jalan menuju kesuksesan.","Charlie Chaplin"],
+["Jangan biarkan apa yang tidak bisa kau lakukan mengganggu apa yang bisa kau lakukan.","John Wooden"],
+["Hidup adalah 10% apa yang terjadi padamu dan 90% bagaimana kau meresponnya.","Charles R. Swindoll"],
+["Kamu tidak perlu hebat untuk memulai, tapi kamu perlu memulai untuk jadi hebat.","Zig Ziglar"],
+["Disiplin adalah jembatan antara tujuan dan pencapaian.","Jim Rohn"],
+["Satu langkah kecil hari ini adalah loncatan besar di masa depan.","Anonim"],
+["Berhentilah menunda, mulai dari yang kecil, mulai sekarang.","Anonim"],
+["Kesulitan yang kau hadapi hari ini membangun kekuatan yang kau butuhkan besok.","Anonim"],
+["Fokus pada progres, bukan kesempurnaan.","Anonim"],
+["Waktu terbaik menanam pohon adalah 20 tahun lalu. Waktu terbaik kedua adalah sekarang.","Pepatah Tiongkok"],
+["Jangan bandingkan babak 1 hidupmu dengan babak 20 hidup orang lain.","Anonim"],
+["Keberanian bukan tidak adanya rasa takut, tapi bertindak meski takut.","Anonim"],
+["Setiap ahli dulunya adalah pemula.","Helen Hayes"],
+["Kau tidak gagal sampai kau berhenti mencoba.","Albert Einstein"],
+["Investasi terbaik adalah investasi pada dirimu sendiri.","Warren Buffett"],
+["Sukses adalah kumpulan usaha kecil yang diulang setiap hari.","Robert Collier"],
+["Jangan takut gagal, takutlah tidak mencoba.","Anonim"],
+["Perubahan dimulai di ujung zona nyamanmu.","Anonim"],
+["Yang membedakan pemenang dan pecundang adalah bagaimana bereaksi pada tiap kegagalan.","Nikki Rowe"],
+["Kamu tidak butuh alasan untuk bahagia, kamu butuh keputusan.","Anonim"],
+["Mulailah dari mana kau berada, gunakan yang kau punya, lakukan yang kau bisa.","Arthur Ashe"],
+["Impian tanpa tindakan hanyalah lamunan.","Anonim"],
+["Hidup itu 1% tentang apa yang terjadi dan 99% tentang bagaimana kau merespon.","Lou Holtz"],
+["Bekerjalah dalam diam, biarkan kesuksesanmu yang bersuara.","Anonim"],
+["Jangan menyerah, awal yang sulit biasanya berakhir indah.","Anonim"],
+["Optimisme adalah bahan bakar bagi pencapaian besar.","Anonim"],
+["Perlahan tapi pasti lebih baik daripada cepat tapi menyerah di tengah jalan.","Anonim"],
+["Kesabaran adalah kunci dari segala kemudahan.","Anonim"],
+["Berbuat baiklah, karena kebaikan akan kembali padamu.","Anonim"],
+["Ilmu tanpa amal seperti pohon tanpa buah.","Pepatah"],
+["Kegagalan adalah guru terbaik yang pernah ada.","Anonim"],
+["Jangan pernah meremehkan kekuatan mimpi dan pengaruh dari jiwa manusia.","Wilma Rudolph"],
+["Kamu adalah rata-rata dari 5 orang yang paling sering kau habiskan waktu bersama.","Jim Rohn"],
+["Hidup terlalu singkat untuk menunda kebahagiaan.","Anonim"],
+["Selalu ada jalan bagi mereka yang mau berusaha.","Anonim"],
+["Kekuatan tidak datang dari kemenangan, perjuanganmulah yang mengembangkan kekuatan.","Arnold Schwarzenegger"],
+["Tak apa berjalan lambat, asal jangan pernah mundur ke belakang.","Abraham Lincoln"],
+["Belajar tak mengenal usia, selama nafas masih ada.","Anonim"],
+["Bahagia itu sederhana, kitanya saja yang sering mempersulit.","Anonim"],
+["Cintai prosesnya, hasil akan mengikuti dengan sendirinya.","Anonim"],
+["Rezeki tidak akan tertukar, tapi usaha tidak akan menghianati hasil.","Pepatah"],
+["Semangat pagi adalah separuh dari kesuksesan hari ini.","Anonim"],
+["Berhenti membandingkan dirimu dengan orang lain, mulailah bersaing dengan dirimu kemarin.","Anonim"],
+["Kesuksesan terbesar adalah bangkit setiap kali kau jatuh.","Nelson Mandela"],
+["Jangan menunggu badai berlalu, belajarlah menari di tengah hujan.","Vivian Greene"],
+["Impian besar dimulai dari keberanian mengambil langkah pertama.","Anonim"],
+["Waktu adalah aset paling berharga, gunakan dengan bijak.","Anonim"],
+["Ketekunan mengalahkan kepintaran ketika kepintaran tidak tekun.","Anonim"],
+["Berbuat salah itu manusiawi, tapi belajar darinya itu bijaksana.","Anonim"],
+["Kamu tidak harus sempurna untuk memulai, tapi kamu harus memulai untuk jadi sempurna.","Anonim"],
+["Jadilah versi terbaik dari dirimu sendiri, bukan versi orang lain.","Anonim"],
+["Rasa syukur mengubah apa yang kita miliki menjadi cukup.","Anonim"],
+["Hidup tidak selalu tentang menang, tapi tentang terus mencoba.","Anonim"],
+["Keajaiban terjadi setiap hari, kau hanya perlu percaya.","Anonim"],
+["Berani bermimpi besar, siap kerja lebih keras.","Anonim"],
+["Kesempatan selalu ada bagi mereka yang siap menyambutnya.","Louis Pasteur"],
+["Jangan biarkan kegagalan hari ini menentukan besok.","Anonim"],
+["Pikiran positif menghasilkan hasil yang positif.","Anonim"],
+["Belajarlah dari kesalahan orang lain, kau tidak punya cukup waktu untuk melakukan semua kesalahan sendiri.","Eleanor Roosevelt"],
+["Konsistensi kecil setiap hari mengalahkan usaha besar sesekali.","Anonim"],
+["Api semangat tidak akan padam selama kau terus menyalakannya.","Anonim"],
+["Tidak ada usaha yang sia-sia, semua akan berbuah pada waktunya.","Anonim"],
+["Jadilah pribadi yang lebih baik dari kemarin, itu sudah cukup.","Anonim"],
+["Kegelapan tidak bisa mengusir kegelapan, hanya cahaya yang bisa.","Martin Luther King Jr."],
+["Berhentilah menunggu kesempurnaan, mulai saja dan perbaiki di tengah jalan.","Anonim"],
+["Kebahagiaan bukan tujuan, tapi cara hidup.","Anonim"],
+["Kuncinya bukan seberapa cepat kau berlari, tapi seberapa lama kau bertahan.","Anonim"],
+["Percaya proses, hasil hanyalah bonus dari kerja keras.","Anonim"],
+["Mimpi besar butuh kesabaran besar.","Anonim"],
+["Jangan takut memulai dari nol, takutlah tidak pernah memulai.","Anonim"],
+["Hari ini adalah kesempatan baru untuk jadi lebih baik.","Anonim"],
+["Berjuanglah dalam diam, biarkan hasil yang bicara.","Anonim"]
+];
+RENDERERS.pomodoro=(el)=>{
+  el.innerHTML=`
+    <div class="card" style="text-align:center;min-height:220px;display:flex;flex-direction:column;justify-content:center">
+      <div style="font-size:32px;color:var(--amber);line-height:1">❝</div>
+      <div id="qText" style="font-family:'Space Grotesk',sans-serif;font-size:18px;line-height:1.5;margin:10px 0 6px;color:var(--off)"></div>
+      <div id="qAuthor" class="muted" style="font-size:13px"></div>
+    </div>
+    <div style="display:flex;gap:10px">
+      <button class="btn full" id="qNext">Quote Berikutnya</button>
+      <button class="btn ghost" id="qCopy" style="flex:0 0 auto">Copy</button>
+    </div>
+    <div class="hint" style="text-align:center;margin-top:10px">${QUOTES.length} kata motivasi tersimpan</div>
+  `;
+  const textEl=el.querySelector('#qText'), authorEl=el.querySelector('#qAuthor');
+  let current=0;
+  function show(){
+    current=Math.floor(Math.random()*QUOTES.length);
+    textEl.textContent=`"${QUOTES[current][0]}"`;
+    authorEl.textContent=`— ${QUOTES[current][1]}`;
+  }
+  el.querySelector('#qNext').onclick=show;
+  el.querySelector('#qCopy').onclick=()=>{
+    navigator.clipboard.writeText(`"${QUOTES[current][0]}" — ${QUOTES[current][1]}`);
+  };
+  show();
+};
+
+/* ============ 8. Image Compressor ============ */
+RENDERERS.compress=(el)=>{
+  el.innerHTML=`
+    <div class="card">
+      <div class="dropzone" id="dz">Tap untuk pilih gambar, atau drag & drop di sini</div>
+      <input type="file" accept="image/*" id="imgFile" style="display:none">
+    </div>
+    <div class="card" id="ctrlCard" style="display:none">
+      <label class="field-lbl">Kualitas: <span id="qVal">80</span>%</label>
+      <input type="range" id="qSlider" min="10" max="100" value="80" style="width:100%">
+      <label class="field-lbl" style="margin-top:10px">Lebar maksimum (px)</label>
+      <input type="number" id="maxW" value="1280">
+      <div class="row" style="margin-top:10px">
+        <div class="muted" id="origSize">Asli: —</div>
+        <div class="muted" id="newSize" style="text-align:right">Hasil: —</div>
+      </div>
+      <img class="preview-img" id="preview">
+      <button class="btn full" id="dlBtn" style="margin-top:10px">Download Hasil</button>
+    </div>
+  `;
+  const dz=el.querySelector('#dz'), fileInp=el.querySelector('#imgFile');
+  dz.onclick=()=>fileInp.click();
+  dz.ondragover=(e)=>{e.preventDefault();dz.classList.add('drag');};
+  dz.ondragleave=()=>dz.classList.remove('drag');
+  dz.ondrop=(e)=>{e.preventDefault();dz.classList.remove('drag');if(e.dataTransfer.files[0])loadFile(e.dataTransfer.files[0]);};
+  fileInp.onchange=(e)=>{if(e.target.files[0])loadFile(e.target.files[0]);};
+
+  let origFile=null, resultUrl=null;
+  function loadFile(file){
+    origFile=file;
+    el.querySelector('#ctrlCard').style.display='block';
+    el.querySelector('#origSize').textContent=`Asli: ${(file.size/1024).toFixed(0)} KB`;
+    process();
+  }
+  function process(){
+    if(!origFile)return;
+    const reader=new FileReader();
+    reader.onload=(ev)=>{
+      const img=new Image();
+      img.onload=()=>{
+        const maxW=parseInt(el.querySelector('#maxW').value)||1280;
+        const scale=Math.min(1,maxW/img.width);
+        const c=document.createElement('canvas');
+        c.width=img.width*scale; c.height=img.height*scale;
+        const ctx=c.getContext('2d'); ctx.drawImage(img,0,0,c.width,c.height);
+        const q=parseInt(el.querySelector('#qSlider').value)/100;
+        c.toBlob((blob)=>{
+          resultUrl=URL.createObjectURL(blob);
+          el.querySelector('#preview').src=resultUrl;
+          el.querySelector('#newSize').textContent=`Hasil: ${(blob.size/1024).toFixed(0)} KB`;
+        },'image/jpeg',q);
+      };
+      img.src=ev.target.result;
+    };
+    reader.readAsDataURL(origFile);
+  }
+  el.querySelector('#qSlider').oninput=(e)=>{el.querySelector('#qVal').textContent=e.target.value;process();};
+  el.querySelector('#maxW').onchange=process;
+  el.querySelector('#dlBtn').onclick=()=>{
+    if(!resultUrl)return;
+    const a=document.createElement('a'); a.href=resultUrl; a.download='compressed.jpg'; a.click();
+  };
+};
+
+/* ============ 9. Undian Nama ============ */
+RENDERERS.name=(el)=>{
+  el.innerHTML=`
+    <div class="card">
+      <label class="field-lbl">Daftar nama (satu per baris)</label>
+      <textarea id="nmList" rows="6" placeholder="Andi\nBudi\nCitra\nDewi"></textarea>
+    </div>
+    <div class="tab-row">
+      <button class="tab-btn active" data-t="shuffle">Acak Urutan</button>
+      <button class="tab-btn" data-t="group">Bagi Kelompok</button>
+      <button class="tab-btn" data-t="pick">Pilih 1 Orang</button>
+    </div>
+    <div class="card" id="groupOpt" style="display:none">
+      <label class="field-lbl">Jumlah kelompok</label>
+      <input type="number" id="nmGroups" value="2">
+    </div>
+    <button class="btn full teal" id="nmRun">Jalankan</button>
+    <div class="result-box" id="nmResult" style="display:none"></div>
+  `;
+  let mode='shuffle';
+  el.querySelectorAll('.tab-btn').forEach(b=>b.onclick=()=>{
+    el.querySelectorAll('.tab-btn').forEach(x=>x.classList.remove('active'));
+    b.classList.add('active'); mode=b.dataset.t;
+    el.querySelector('#groupOpt').style.display = mode==='group'?'block':'none';
+  });
+  function shuffle(arr){
+    const a=[...arr];
+    for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}
+    return a;
+  }
+  el.querySelector('#nmRun').onclick=()=>{
+    const names=el.querySelector('#nmList').value.split('\n').map(s=>s.trim()).filter(Boolean);
+    const box=el.querySelector('#nmResult'); box.style.display='block';
+    if(names.length===0){box.innerHTML='Isi daftar nama dulu.';return;}
+    if(mode==='shuffle'){
+      box.innerHTML=shuffle(names).map((n,i)=>`<div>${i+1}. ${n}</div>`).join('');
+    } else if(mode==='pick'){
+      const winner=names[Math.floor(Math.random()*names.length)];
+      box.innerHTML=`<div class="muted">Terpilih:</div><div class="big">${winner}</div>`;
+    } else {
+      const g=Math.max(1,parseInt(el.querySelector('#nmGroups').value)||2);
+      const shuffled=shuffle(names);
+      const groups=Array.from({length:g},()=>[]);
+      shuffled.forEach((n,i)=>groups[i%g].push(n));
+      box.innerHTML=groups.map((grp,i)=>`<div class="muted" style="margin-top:${i?10:0}px">Kelompok ${i+1}</div><div>${grp.join(', ')}</div>`).join('');
+    }
+  };
+};
+
+/* ============ 10. Color Palette Generator ============ */
+RENDERERS.countdown=(el)=>{
+  el.innerHTML=`
+    <div class="card">
+      <div class="row">
+        <div><label class="field-lbl">Mode</label>
+          <select id="cpMode">
+            <option value="random">Acak Bebas</option>
+            <option value="mono">Monochromatic</option>
+            <option value="analog">Analogous</option>
+            <option value="comp">Complementary</option>
+            <option value="triad">Triadic</option>
+          </select>
+        </div>
+        <div><label class="field-lbl">Jumlah warna</label>
+          <select id="cpCount"><option>3</option><option selected>5</option><option>6</option></select>
+        </div>
+      </div>
+      <button class="btn full teal" id="cpGen" style="margin-top:12px">Generate Palette (spasi juga bisa)</button>
+    </div>
+    <div id="cpSwatches"></div>
+  `;
+  function hslToHex(h,s,l){
+    s/=100; l/=100;
+    const k=n=>(n+h/30)%12;
+    const a=s*Math.min(l,1-l);
+    const f=n=>l-a*Math.max(-1,Math.min(k(n)-3,Math.min(9-k(n),1)));
+    const toHex=x=>Math.round(255*x).toString(16).padStart(2,'0');
+    return `#${toHex(f(0))}${toHex(f(8))}${toHex(f(4))}`;
+  }
+  function genPalette(){
+    const mode=el.querySelector('#cpMode').value;
+    const count=parseInt(el.querySelector('#cpCount').value);
+    const baseH=Math.floor(Math.random()*360);
+    let colors=[];
+    if(mode==='random'){
+      for(let i=0;i<count;i++) colors.push(hslToHex(Math.floor(Math.random()*360),55+Math.random()*35,40+Math.random()*30));
+    } else if(mode==='mono'){
+      for(let i=0;i<count;i++) colors.push(hslToHex(baseH,55+Math.random()*20,20+ (70/count)*i));
+    } else if(mode==='analog'){
+      for(let i=0;i<count;i++) colors.push(hslToHex((baseH+i*28)%360,60,45+Math.random()*15));
+    } else if(mode==='comp'){
+      for(let i=0;i<count;i++) colors.push(hslToHex(i%2===0?baseH:(baseH+180)%360,60,35+ (i*10)));
+    } else if(mode==='triad'){
+      for(let i=0;i<count;i++) colors.push(hslToHex((baseH+i*120)%360,60,45));
+    }
+    render(colors);
+  }
+  function render(colors){
+    el.querySelector('#cpSwatches').innerHTML=colors.map(hex=>`
+      <div class="card" style="padding:0;overflow:hidden;display:flex;align-items:center;margin-bottom:10px">
+        <div style="width:64px;height:64px;background:${hex};flex-shrink:0"></div>
+        <div style="padding:0 14px;flex:1">
+          <div class="font-mono" style="font-weight:700;font-size:15px">${hex.toUpperCase()}</div>
+          <div class="muted" style="font-size:11.5px">tap untuk copy</div>
+        </div>
+      </div>
+    `).join('');
+    el.querySelectorAll('#cpSwatches .card').forEach((c,i)=>{
+      c.style.cursor='pointer';
+      c.onclick=()=>navigator.clipboard.writeText(colors[i].toUpperCase());
+    });
+  }
+  el.querySelector('#cpGen').onclick=genPalette;
+  const spaceHandler=(e)=>{ if(e.code==='Space' && moduleView.style.display==='block'){ e.preventDefault(); genPalette(); } };
+  document.addEventListener('keydown',spaceHandler);
+  genPalette();
+  return ()=>document.removeEventListener('keydown',spaceHandler);
+};
+
+/* ============ 11. HTML Preview & Export ============ */
+RENDERERS.htmlpreview=(el)=>{
+  el.innerHTML=`
+    <div class="card">
+      <label class="field-lbl">Tempel kode HTML di sini</label>
+      <textarea id="hpCode" rows="8" placeholder="&lt;!DOCTYPE html&gt;
+&lt;html&gt;
+&lt;head&gt;&lt;title&gt;Contoh&lt;/title&gt;&lt;/head&gt;
+&lt;body&gt;
+  &lt;h1&gt;Halo!&lt;/h1&gt;
+&lt;/body&gt;
+&lt;/html&gt;"></textarea>
+      <div class="row" style="margin-top:10px">
+        <div><label class="field-lbl">Nama file</label><input type="text" id="hpFilename" value="halaman"></div>
+      </div>
+      <div style="display:flex;gap:10px;margin-top:12px">
+        <button class="btn full" id="hpPreview">Preview</button>
+        <button class="btn ghost full" id="hpDownload">Download .html</button>
+      </div>
+      <div class="hint" id="hpStatus"></div>
+    </div>
+    <div class="card" id="hpPreviewCard" style="display:none;padding:0;overflow:hidden">
+      <iframe id="hpFrame" style="width:100%;height:420px;border:0;background:#fff;display:block"></iframe>
+    </div>
+  `;
+  const codeEl=el.querySelector('#hpCode');
+  const frame=el.querySelector('#hpFrame');
+  const previewCard=el.querySelector('#hpPreviewCard');
+  const status=el.querySelector('#hpStatus');
+
+  el.querySelector('#hpPreview').onclick=()=>{
+    const code=codeEl.value;
+    if(!code.trim()){ status.textContent='Tempel kode HTML dulu.'; return; }
+    previewCard.style.display='block';
+    frame.srcdoc=code;
+    status.textContent='';
+  };
+  el.querySelector('#hpDownload').onclick=()=>{
+    const code=codeEl.value;
+    if(!code.trim()){ status.textContent='Tempel kode HTML dulu.'; return; }
+    let name=(el.querySelector('#hpFilename').value||'halaman').trim();
+    if(!name) name='halaman';
+    if(!name.toLowerCase().endsWith('.html')) name+='.html';
+    const blob=new Blob([code],{type:'text/html'});
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement('a');
+    a.href=url; a.download=name; a.click();
+    setTimeout(()=>URL.revokeObjectURL(url),2000);
+    status.textContent=`Terdownload sebagai ${name}`;
+  };
+};
+
+/* ============ 12. Kalkulator Usia Detail ============ */
+RENDERERS.age=(el)=>{
+  const monthNames=['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
+  el.innerHTML=`
+    <div class="card">
+      <div class="row">
+        <div><label class="field-lbl" style="font-size:11px">Tanggal</label><input type="number" id="ageDay" placeholder="17" min="1" max="31"></div>
+        <div><label class="field-lbl" style="font-size:11px">Bulan</label>
+          <select id="ageMonth">${monthNames.map((m,i)=>`<option value="${i+1}">${m}</option>`).join('')}</select>
+        </div>
+        <div><label class="field-lbl" style="font-size:11px">Tahun</label><input type="number" id="ageYear" placeholder="2000" min="1900" max="2100"></div>
+      </div>
+      <button class="btn full teal" style="margin-top:12px" id="ageCalc">Hitung Usia</button>
+    </div>
+    <div id="ageResult"></div>
+  `;
+  const dayInput=el.querySelector('#ageDay');
+  const monthInput=el.querySelector('#ageMonth');
+  const yearInput=el.querySelector('#ageYear');
+  const resultBox=el.querySelector('#ageResult');
+
+  function calc(){
+    const d=parseInt(dayInput.value), m=parseInt(monthInput.value), y=parseInt(yearInput.value);
+    if(!d||!m||!y){ resultBox.innerHTML=`<div class="card"><span style="color:var(--danger)">Isi tanggal, bulan, dan tahun lahir dulu.</span></div>`; return; }
+    const dob=new Date(y,m-1,d);
+    if(dob.getMonth()!==m-1 || dob.getDate()!==d){
+      resultBox.innerHTML=`<div class="card"><span style="color:var(--danger)">Tanggal tidak valid.</span></div>`;
+      return;
+    }
+    const now=new Date();
+    if(dob>now){
+      resultBox.innerHTML=`<div class="card"><span style="color:var(--danger)">Tanggal lahir belum terjadi.</span></div>`;
+      return;
+    }
+    let years=now.getFullYear()-dob.getFullYear();
+    let months=now.getMonth()-dob.getMonth();
+    let days=now.getDate()-dob.getDate();
+    if(days<0){
+      months--;
+      const prevMonth=new Date(now.getFullYear(),now.getMonth(),0);
+      days+=prevMonth.getDate();
+    }
+    if(months<0){ years--; months+=12; }
+
+    const totalDays=Math.floor((now-dob)/86400000);
+    const totalWeeks=Math.floor(totalDays/7);
+    const totalHours=Math.floor((now-dob)/3600000);
+
+    // next birthday
+    let nextBday=new Date(now.getFullYear(),dob.getMonth(),dob.getDate());
+    if(nextBday<now){ nextBday=new Date(now.getFullYear()+1,dob.getMonth(),dob.getDate()); }
+    const daysToNext=Math.ceil((nextBday-now)/86400000);
+
+    resultBox.innerHTML=`
+      <div class="card">
+        <div class="muted">Usia kamu sekarang</div>
+        <div class="big" style="font-size:22px;margin-top:4px">${years} tahun ${months} bulan ${days} hari</div>
+      </div>
+      <div class="card">
+        <div class="prayer-row"><span class="pname">Total hari hidup</span><span class="ptime">${totalDays.toLocaleString('id-ID')} hari</span></div>
+        <div class="prayer-row"><span class="pname">Total minggu</span><span class="ptime">${totalWeeks.toLocaleString('id-ID')} minggu</span></div>
+        <div class="prayer-row"><span class="pname">Total jam</span><span class="ptime">${totalHours.toLocaleString('id-ID')} jam</span></div>
+        <div class="prayer-row"><span class="pname">Ulang tahun berikutnya</span><span class="ptime">${daysToNext===0?'Hari ini! 🎉':daysToNext+' hari lagi'}</span></div>
+      </div>
+    `;
+  }
+  el.querySelector('#ageCalc').onclick=calc;
+};
+
+</script>
+</body>
+</html>
