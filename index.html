@@ -198,16 +198,17 @@ input:checked+.slider::before{transform:translateX(18px);}
 .pomodoro-time{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:'JetBrains Mono',monospace;font-size:36px;font-weight:700;color:var(--off);}
 .pomodoro-label{text-align:center;color:var(--muted);font-size:12.5px;margin-top:4px;text-transform:uppercase;letter-spacing:.08em;}
 
-.file-input-visible{
-  width:100%;color:var(--muted);font-size:12.5px;
-  background:var(--navy);border:2px dashed #3a4657;border-radius:12px;
-  padding:18px 12px;display:block;
+.dropzone-wrap{position:relative;display:block;}
+.dropzone{
+  border:2px dashed #3a4657;border-radius:12px;padding:30px 16px;text-align:center;
+  color:var(--muted);font-size:13px;
+  position:relative;display:block;pointer-events:none;
 }
-.file-input-visible::file-selector-button{
-  background:var(--amber);color:#241a08;border:none;border-radius:8px;
-  padding:9px 14px;font-weight:700;font-size:12.5px;margin-right:10px;cursor:pointer;
-  font-family:'Inter',sans-serif;
+.dropzone-input{
+  position:absolute;inset:0;width:100%;height:100%;
+  opacity:0;cursor:pointer;
 }
+.dropzone.drag{border-color:var(--teal);color:var(--teal);}
 .preview-img{max-width:100%;border-radius:10px;margin-top:10px;}
 
 .qibla-compass{width:200px;height:200px;margin:14px auto;position:relative;border-radius:50%;background:var(--navy3);border:2px solid #3a4657;}
@@ -557,7 +558,10 @@ RENDERERS.qr=(el)=>{
       <button class="btn ghost full" id="qrDownload" style="display:none;margin-top:10px">Download PNG</button>
     </div>
     <div class="card" id="gambarPane" style="display:none">
-      <input type="file" accept="image/*" id="qrImgFile" class="file-input-visible">
+      <div class="dropzone-wrap">
+        <div class="dropzone" id="imgDz">Tap untuk pilih gambar</div>
+        <input type="file" accept="image/*" id="qrImgFile" class="dropzone-input">
+      </div>
       <div class="hint" id="imgStatus" style="margin-top:8px"></div>
       <div id="imgLinkBox" style="display:none;margin-top:12px">
         <label class="field-lbl">Link gambar (bisa di-copy / dibuka di browser)</label>
@@ -1009,7 +1013,10 @@ RENDERERS.pomodoro=(el)=>{
 RENDERERS.compress=(el)=>{
   el.innerHTML=`
     <div class="card">
-      <input type="file" accept="image/*" id="imgFile" class="file-input-visible">
+      <div class="dropzone-wrap">
+        <div class="dropzone" id="dz">Tap untuk pilih gambar, atau drag & drop di sini</div>
+        <input type="file" accept="image/*" id="imgFile" class="dropzone-input">
+      </div>
     </div>
     <div class="card" id="ctrlCard" style="display:none">
       <label class="field-lbl">Kualitas: <span id="qVal">80</span>%</label>
